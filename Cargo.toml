@@ -1,0 +1,9 @@
+[package]
+name = "swappy"
+version = "1.1.0"
+authors = ["Jeremy Attali <contact@jtheoof.me>"]
+
+[dependencies]
+gio = "0.8.1"
+glib = "0.9.3"
+gtk = "0.8.1"
