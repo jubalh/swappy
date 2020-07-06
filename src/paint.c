@@ -269,7 +269,7 @@ void paint_commit_temporary(struct swappy_state *state) {
 
   switch (paint->type) {
     case SWAPPY_PAINT_MODE_TEXT:
-      if (strlen(paint->content.text.text) == 0) {
+      if (g_utf8_strlen(paint->content.text.text, -1) == 0) {
         paint->can_draw = false;
       }
       paint->content.text.mode = SWAPPY_TEXT_MODE_DONE;

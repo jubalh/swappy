@@ -30,22 +30,14 @@ gchar *string_remove_at(gchar *str, glong pos) {
 gchar *string_insert_chars_at(gchar *str, gchar *chars, glong pos) {
   gchar *new_str = NULL;
 
-  if (str && chars) {
-    glong str_len = g_utf8_strlen(str, -1);
+  if (g_utf8_validate(str, -1, NULL) && g_utf8_validate(chars, -1, NULL) &&
+      pos >= 0 && pos <= g_utf8_strlen(str, -1)) {
+    gchar *from = g_utf8_substring(str, 0, pos);
+    gchar *end = g_utf8_offset_to_pointer(str, pos);
 
-    if (pos == 0) {
-      new_str = g_strconcat(chars, NULL);
-    } else if (pos == str_len) {
-      new_str = g_strconcat(str, chars, NULL);
-    } else if (pos > 0 && pos < str_len) {
-      gchar *from = g_new0(gchar, pos);
-      gchar *end = g_utf8_offset_to_pointer(str, pos);
+    new_str = g_strconcat(from, chars, end, NULL);
 
-      g_utf8_strncpy(from, str, pos);
-      new_str = g_strconcat(from, chars, end, NULL);
-
-      g_free(from);
-    }
+    g_free(from);
 
   } else {
     new_str = g_new0(gchar, 1);
