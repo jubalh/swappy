@@ -3,38 +3,66 @@
 #include <glib.h>
 #include <string.h>
 
-void string_remove_at(gchar *str, size_t pos) {
-  if (str && strlen(str) > pos) {
-    memmove(&str[pos], &str[pos + 1], strlen(str) - pos);
-  }
-}
+gchar *string_remove_at(gchar *str, glong pos) {
+  glong str_len = g_utf8_strlen(str, -1);
+  gchar *new_str = g_new0(gchar, MAX(str_len - 1, 1));
+  gchar *buffer_source = str;
+  gchar *buffer_copy = new_str;
+  glong i = 0;
+  gint bytes;
+  gunichar c;
 
-gchar *string_insert_chars_at(gchar *str, gchar *chars, size_t pos) {
-  gchar *new_str;
-
-  if (str && chars) {
-    size_t n = strlen(str);
-    size_t m = strlen(chars);
-    size_t i = 0, j = 0;
-
-    new_str = g_new(gchar, n + m + 1);
-
-    while (j < n + m) {
-      if (j == pos) {
-        for (size_t k = 0; k < m; k++) {
-          new_str[j++] = chars[k];
-        }
-      } else {
-        new_str[j++] = str[i++];
+  if (pos <= str_len && g_utf8_validate(str, -1, NULL)) {
+    while (*buffer_source != '\0') {
+      c = g_utf8_get_char(buffer_source);
+      buffer_source = g_utf8_next_char(buffer_source);
+      if (i != pos) {
+        bytes = g_unichar_to_utf8(c, buffer_copy);
+        buffer_copy += bytes;
       }
+      i++;
     }
-
-    new_str[j] = '\0';
-  } else {
-    new_str = NULL;
   }
 
   return new_str;
+}
+
+gchar *string_insert_chars_at(gchar *str, gchar *chars, glong pos) {
+  gchar *new_str = NULL;
+
+  if (str && chars) {
+    glong str_len = g_utf8_strlen(str, -1);
+
+    if (pos == 0) {
+      new_str = g_strconcat(chars, NULL);
+    } else if (pos == str_len) {
+      new_str = g_strconcat(str, chars, NULL);
+    } else if (pos > 0 && pos < str_len) {
+      gchar *from = g_new0(gchar, pos);
+      gchar *end = g_utf8_offset_to_pointer(str, pos);
+
+      g_utf8_strncpy(from, str, pos);
+      new_str = g_strconcat(from, chars, end, NULL);
+
+      g_free(from);
+    }
+
+  } else {
+    new_str = g_new0(gchar, 1);
+  }
+
+  return new_str;
+}
+
+glong string_get_nb_bytes_until(gchar *str, glong until) {
+  glong ret = 0;
+  if (str) {
+    gchar *sub = g_utf8_substring(str, 0, until);
+    ret = strlen(sub);
+    g_free(sub);
+  }
+
+  return ret;
 }
 
 void pixel_data_print(guint32 pixel) {
